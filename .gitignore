@@ -1,0 +1,33 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+config/local.*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Node
+node_modules/
+
+# Images & media (gallery data, build artifacts, test evidence)
+*.jpg
+*.jpeg
+*.gif
+*.tar.gz
+*.pdf
+
+# Runtime data
+/retry/
+/gallery/
+
+# Internal project notes (not for public consumption)
+tasks/
+
+# Claude Code runtime files
+.claude/

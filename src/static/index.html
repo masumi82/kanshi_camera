@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KANSHI // OPS CONSOLE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-0: #07090c;
+  --bg-1: #0c1016;
+  --bg-2: #10141b;
+  --bg-3: #161c26;
+  --line: #1d2734;
+  --line-strong: #2a3647;
+  --ink-0: #e6ecf2;
+  --ink-1: #a9b5c4;
+  --ink-2: #6b7a8a;
+  --ink-3: #3e4a5a;
+  --amber: #ffb020;
+  --amber-soft: rgba(255,176,32,0.18);
+  --amber-line: rgba(255,176,32,0.45);
+  --mint: #2de29a;
+  --mint-soft: rgba(45,226,154,0.15);
+  --red: #ef3b3b;
+  --red-soft: rgba(239,59,59,0.16);
+  --cyan: #5ee1ff;
+  --ff-ui: 'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
+  --ff-mono: 'JetBrains Mono', ui-monospace, 'Menlo', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg-0); color: var(--ink-0); }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body {
+  font-family: var(--ff-ui);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(255,176,32,0.06), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(94,225,255,0.05), transparent 60%),
+    linear-gradient(180deg, var(--bg-0) 0%, #05070a 100%);
+  position: relative;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at center, #000 55%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 55%, transparent 90%);
+}
+button { font-family: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+img { display: block; max-width: 100%; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-0); }
+::-webkit-scrollbar-thumb { background: var(--bg-3); border: 2px solid var(--bg-0); }
+::-webkit-scrollbar-thumb:hover { background: var(--line-strong); }
+
+.panel {
+  position: relative;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+}
+.panel::before, .panel::after,
+.panel > .corner-tl, .panel > .corner-br {
+  content: ''; position: absolute; width: 14px; height: 14px;
+  border: 1px solid var(--amber); pointer-events: none;
+}
+.panel::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.panel::after  { top: -1px; right: -1px; border-left: 0; border-bottom: 0; }
+.panel > .corner-tl { bottom: -1px; left: -1px; border-right: 0; border-top: 0; }
+.panel > .corner-br { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+
+.panel-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  font-family: var(--ff-mono);
+  font-size: 0.72rem; letter-spacing: 0.18em;
+  color: var(--ink-1); text-transform: uppercase;
+}
+.panel-head .dot { width: 6px; height: 6px; background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+.panel-head .tag { margin-left: auto; color: var(--ink-2); font-size: 0.65rem; letter-spacing: 0.22em; }
+.panel-body { padding: 18px; }
+
+/* Topbar */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: rgba(7,9,12,0.82); border-bottom: 1px solid var(--line);
+}
+.topbar-inner {
+  max-width: 1280px; margin: 0 auto; padding: 10px 20px;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 18px;
+}
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--ink-0); }
+.brand-mark {
+  position: relative; width: 30px; height: 30px;
+  border: 1px solid var(--amber); display: grid; place-items: center; background: var(--bg-1);
+}
+.brand-mark::before, .brand-mark::after {
+  content: ''; position: absolute; inset: 3px; border: 1px dashed rgba(255,176,32,0.4);
+}
+.brand-mark::after {
+  inset: 11px; border: 1px solid var(--amber); border-radius: 50%; background: var(--bg-1);
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1; }
+.brand-title { font-weight: 700; letter-spacing: 0.12em; font-size: 0.95rem; }
+.brand-title .slash { color: var(--amber); margin: 0 4px; }
+.brand-sub {
+  margin-top: 4px; font-family: var(--ff-mono); font-size: 0.6rem;
+  letter-spacing: 0.3em; color: var(--ink-2); text-transform: uppercase;
+}
+.topbar-center { display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 11px; font-family: var(--ff-mono);
+  font-size: 0.7rem; letter-spacing: 0.12em; color: var(--ink-1);
+  background: var(--bg-1); border: 1px solid var(--line); text-transform: uppercase;
+}
+.chip b { color: var(--ink-0); font-weight: 500; letter-spacing: 0.08em; }
+.chip .lbl { color: var(--ink-2); }
+.chip.accent { border-color: var(--amber-line); color: var(--amber); background: rgba(255,176,32,0.04); }
+.chip.accent b { color: var(--amber); }
+.status-chip {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 5px 12px; font-family: var(--ff-mono);
+  font-size: 0.7rem; letter-spacing: 0.2em;
+  border: 1px solid var(--mint); color: var(--mint);
+  background: var(--mint-soft); text-transform: uppercase;
+}
+.status-chip.offline { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+.status-chip .led {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--mint); box-shadow: 0 0 10px var(--mint);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+.status-chip.offline .led { background: var(--red); box-shadow: 0 0 10px var(--red); animation: none; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* Telemetry */
+.telemetry { max-width: 1280px; margin: 18px auto 0; padding: 0 20px; }
+.telemetry-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.tele-cell {
+  position: relative; padding: 10px 14px; background: var(--bg-2);
+  border: 1px solid var(--line); overflow: hidden;
+}
+.tele-cell::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--amber); opacity: 0.85; }
+.tele-cell.mint::before { background: var(--mint); }
+.tele-cell.cyan::before { background: var(--cyan); }
+.tele-cell.red::before { background: var(--red); }
+.tele-label { font-family: var(--ff-mono); font-size: 0.6rem; letter-spacing: 0.3em; color: var(--ink-2); text-transform: uppercase; margin-bottom: 4px; }
+.tele-value {
+  font-family: var(--ff-mono); font-size: 1.1rem; font-weight: 500;
+  color: var(--ink-0); letter-spacing: 0.04em; line-height: 1.1;
+  display: flex; align-items: baseline; gap: 6px;
+}
+.tele-value .unit { font-size: 0.66rem; color: var(--ink-2); letter-spacing: 0.16em; }
+.tele-sub { margin-top: 4px; font-family: var(--ff-mono); font-size: 0.62rem; color: var(--ink-2); letter-spacing: 0.08em; }
+
+/* Main */
+.main {
+  position: relative; z-index: 1;
+  max-width: 1280px; margin: 18px auto 40px;
+  padding: 0 20px;
+  display: grid; grid-template-columns: 1fr 300px; gap: 16px;
+}
+@media (max-width: 1099px) { .main { grid-template-columns: 1fr; } }
+
+/* Live viewer panel */
+.viewer-panel .panel-body { padding: 0; }
+.viewer-stage {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  max-width: 560px;
+  margin: 0 auto;
+  background: #000;
+  overflow: hidden;
+}
+.viewer-stage img {
+  width: 100%; height: 100%; object-fit: contain; display: block;
+  opacity: 0; transition: opacity 200ms ease;
+}
+.viewer-stage img.is-loaded { opacity: 1; }
+.viewer-empty {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  color: var(--ink-2); font-family: var(--ff-mono);
+  font-size: 0.74rem; letter-spacing: 0.2em; text-transform: uppercase;
+}
+.viewer-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; padding: 8px 14px; border-top: 1px solid var(--line);
+  background: var(--bg-1);
+  font-family: var(--ff-mono); font-size: 0.7rem; color: var(--ink-1);
+  letter-spacing: 0.08em;
+}
+.viewer-foot .ts { color: var(--amber); }
+.viewer-foot .sz { color: var(--ink-2); font-size: 0.64rem; }
+
+/* Sidestack */
+.sidestack { display: flex; flex-direction: column; gap: 14px; }
+
+/* Countdown */
+.countdown-card { padding: 16px 18px 14px; position: relative; }
+.countdown-card .progress-ring { position: absolute; top: 14px; right: 14px; width: 52px; height: 52px; }
+.countdown-card .progress-ring circle { fill: none; stroke-width: 3; }
+.countdown-card .progress-ring .track { stroke: var(--line); }
+.countdown-card .progress-ring .bar {
+  stroke: var(--amber); stroke-linecap: square;
+  transform: rotate(-90deg); transform-origin: 50% 50%;
+  transition: stroke-dashoffset 320ms ease;
+  filter: drop-shadow(0 0 6px rgba(255,176,32,0.6));
+}
+.countdown-label { font-family: var(--ff-mono); font-size: 0.6rem; letter-spacing: 0.3em; color: var(--ink-2); text-transform: uppercase; margin-bottom: 4px; }
+.countdown-clock {
+  font-family: var(--ff-mono); font-size: 1.8rem; font-weight: 500;
+  color: var(--amber); letter-spacing: 0.04em; line-height: 1;
+  text-shadow: 0 0 18px rgba(255,176,32,0.25);
+}
+.countdown-meta {
+  margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line);
+  display: flex; justify-content: space-between;
+  font-family: var(--ff-mono); font-size: 0.68rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-1);
+}
+.countdown-meta .k { color: var(--ink-2); margin-right: 6px; }
+
+/* Interval */
+.interval-card { padding: 14px 18px 18px; }
+.interval-current { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+.interval-current .num {
+  font-family: var(--ff-mono); font-size: 1.6rem; font-weight: 500;
+  color: var(--ink-0); line-height: 1;
+}
+.interval-current .unit { font-family: var(--ff-mono); font-size: 0.72rem; color: var(--ink-2); letter-spacing: 0.22em; text-transform: uppercase; }
+.interval-track { position: relative; display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; padding: 2px; background: var(--bg-1); border: 1px solid var(--line); }
+.interval-cell {
+  position: relative; display: grid; place-items: center;
+  height: 32px; background: transparent;
+  color: var(--ink-1); font-family: var(--ff-mono);
+  font-size: 0.76rem; border: 1px solid transparent;
+  transition: color 120ms, background 120ms, border-color 120ms;
+}
+.interval-cell:hover { color: var(--amber); background: rgba(255,176,32,0.06); }
+.interval-cell.is-current { color: var(--bg-0); background: var(--amber); box-shadow: 0 0 18px rgba(255,176,32,0.3); font-weight: 700; }
+.interval-cell.is-saving { animation: saving 900ms ease infinite; }
+@keyframes saving { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.interval-hint {
+  margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line);
+  font-family: var(--ff-mono); font-size: 0.64rem; color: var(--ink-2);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  display: flex; justify-content: space-between; gap: 12px;
+}
+.interval-hint .sync { color: var(--mint); }
+.interval-hint .sync.pending { color: var(--amber); }
+.interval-hint .sync.error { color: var(--red); }
+
+/* Live stream card */
+.live-card { padding: 0; }
+.live-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 14px; border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  font-family: var(--ff-mono); font-size: 0.7rem;
+  letter-spacing: 0.18em; color: var(--ink-1); text-transform: uppercase;
+  cursor: pointer;
+}
+.live-head .dot { width: 6px; height: 6px; background: var(--red); box-shadow: 0 0 10px var(--red); }
+.live-head-left { display: flex; align-items: center; gap: 10px; }
+.live-head-right { color: var(--ink-2); font-size: 0.6rem; }
+.live-body { display: none; position: relative; aspect-ratio: 4 / 3; background: #000; }
+.live-body.visible { display: block; }
+.live-body img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Archive grid */
+.archive {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+.archive-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap; padding: 10px 12px;
+  background: var(--bg-1); border: 1px solid var(--line); border-bottom: 0;
+}
+.toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.date-select {
+  appearance: none; -webkit-appearance: none;
+  font-family: var(--ff-mono); font-size: 0.7rem; letter-spacing: 0.1em;
+  color: var(--ink-0);
+  background: var(--bg-2)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8' fill='%23ffb020'%3E%3Cpath d='M0 0h10L5 8z'/%3E%3C/svg%3E") right 10px center/10px no-repeat;
+  border: 1px solid var(--line-strong);
+  padding: 7px 28px 7px 12px;
+  text-transform: uppercase; min-width: 170px; cursor: pointer;
+  transition: border-color 120ms;
+}
+.date-select:hover { border-color: var(--amber); outline: none; }
+.count-pill {
+  font-family: var(--ff-mono); font-size: 0.66rem;
+  letter-spacing: 0.2em; color: var(--ink-2);
+  text-transform: uppercase; padding: 7px 10px;
+  border-left: 1px solid var(--line);
+}
+.count-pill b { color: var(--amber); font-weight: 500; margin: 0 4px; }
+.refresh-btn {
+  width: 34px; height: 32px; display: grid; place-items: center;
+  color: var(--ink-1); border: 1px solid var(--line-strong);
+  background: var(--bg-2);
+  transition: color 120ms, border-color 120ms;
+}
+.refresh-btn:hover { color: var(--amber); border-color: var(--amber); }
+.refresh-btn svg { width: 14px; height: 14px; }
+.refresh-btn.is-loading svg { animation: spin 800ms linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.auto-toggle {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--ff-mono); font-size: 0.64rem;
+  letter-spacing: 0.2em; color: var(--ink-2);
+  text-transform: uppercase; cursor: pointer;
+}
+.auto-toggle input {
+  appearance: none; width: 34px; height: 18px;
+  background: var(--bg-2); border: 1px solid var(--line-strong);
+  position: relative; cursor: pointer;
+  transition: background 120ms, border-color 120ms;
+}
+.auto-toggle input::after {
+  content: ''; position: absolute; left: 2px; top: 1px;
+  width: 12px; height: 12px; background: var(--ink-2);
+  transition: transform 120ms, background 120ms;
+}
+.auto-toggle input:checked { background: rgba(255,176,32,0.15); border-color: var(--amber); }
+.auto-toggle input:checked::after { transform: translateX(16px); background: var(--amber); }
+
+.archive-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2px; padding: 2px;
+  background: var(--line); border: 1px solid var(--line); border-top: 0;
+  min-height: 180px;
+}
+.shot {
+  position: relative; background: var(--bg-1); cursor: pointer;
+  overflow: hidden; outline: 1px solid transparent;
+  transition: outline 120ms;
+  animation: fadeUp 300ms ease both;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.shot:hover { outline: 1px solid var(--amber); z-index: 2; }
+.shot-thumb { position: relative; width: 100%; aspect-ratio: 4 / 3; background: var(--bg-2); overflow: hidden; }
+.shot-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 240ms ease;
+}
+.shot:hover .shot-thumb img { transform: scale(1.03); }
+.shot-tag {
+  position: absolute; top: 6px; left: 6px; z-index: 2;
+  font-family: var(--ff-mono); font-size: 0.56rem; letter-spacing: 0.2em;
+  padding: 2px 6px; background: rgba(7,9,12,0.75);
+  color: var(--amber); border: 1px solid rgba(255,176,32,0.4); text-transform: uppercase;
+}
+.shot-meta {
+  padding: 8px 10px; font-family: var(--ff-mono); font-size: 0.66rem;
+  letter-spacing: 0.04em; color: var(--ink-1);
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 8px; border-top: 1px solid var(--line);
+}
+.shot-meta .fname { color: var(--ink-0); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
+.shot-meta .sz { color: var(--ink-2); font-size: 0.6rem; }
+
+.empty {
+  grid-column: 1 / -1;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 50px 20px;
+  color: var(--ink-2); font-family: var(--ff-mono);
+  letter-spacing: 0.12em; text-align: center;
+}
+.empty-title { font-size: 0.85rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-1); margin-bottom: 4px; }
+
+.load-more-wrap { display: none; justify-content: center; padding: 14px 0 0; }
+.load-more-wrap.visible { display: flex; }
+.load-more-btn {
+  padding: 8px 20px; font-family: var(--ff-mono);
+  font-size: 0.68rem; letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--ink-1); background: var(--bg-1);
+  border: 1px solid var(--line-strong);
+  transition: color 120ms, border-color 120ms;
+}
+.load-more-btn:hover { color: var(--amber); border-color: var(--amber); }
+.load-more-btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+/* Lightbox */
+.lightbox {
+  position: fixed; inset: 0; z-index: 200; display: none;
+  align-items: center; justify-content: center;
+  background: rgba(5,7,10,0.92);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.lightbox.visible { display: flex; }
+.lightbox-stage { position: relative; max-width: min(96vw, 1200px); max-height: 92vh; display: flex; flex-direction: column; gap: 10px; }
+.lightbox-frame { position: relative; border: 1px solid var(--amber-line); background: #000; }
+.lightbox-frame img { max-width: 100%; max-height: 78vh; display: block; }
+.lightbox-footer { display: flex; justify-content: space-between; font-family: var(--ff-mono); font-size: 0.72rem; color: var(--ink-1); letter-spacing: 0.1em; }
+.lightbox-footer .hi { color: var(--ink-0); }
+.lbl-close, .lbl-nav {
+  position: fixed; width: 44px; height: 44px; display: grid; place-items: center;
+  color: var(--ink-0); background: rgba(16,20,27,0.8);
+  border: 1px solid var(--line); z-index: 210;
+  transition: color 120ms, border-color 120ms;
+}
+.lbl-close:hover, .lbl-nav:hover { color: var(--amber); border-color: var(--amber); }
+.lbl-close { top: 20px; right: 20px; }
+.lbl-nav.prev { left: 20px; top: 50%; transform: translateY(-50%); }
+.lbl-nav.next { right: 20px; top: 50%; transform: translateY(-50%); }
+
+/* Toasts */
+.toasts { position: fixed; bottom: 22px; right: 22px; z-index: 300; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast {
+  padding: 10px 16px 10px 12px; border-left: 3px solid var(--amber);
+  background: var(--bg-2); color: var(--ink-0);
+  font-family: var(--ff-mono); font-size: 0.74rem; letter-spacing: 0.06em;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.55);
+  pointer-events: auto;
+  animation: toastIn 220ms ease, toastOut 260ms ease 3.6s forwards;
+  max-width: 360px;
+}
+.toast.ok { border-left-color: var(--mint); }
+.toast.err { border-left-color: var(--red); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { to { opacity: 0; transform: translateX(16px); } }
+
+/* Footer */
+.footer {
+  position: relative; z-index: 1; max-width: 1280px; margin: 28px auto 20px;
+  padding: 0 20px; display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
+  font-family: var(--ff-mono); font-size: 0.6rem; letter-spacing: 0.22em;
+  color: var(--ink-3); text-transform: uppercase;
+}
+.footer b { color: var(--ink-2); font-weight: 500; }
+
+@media (max-width: 899px) {
+  .telemetry-grid { grid-template-columns: repeat(2, 1fr); }
+  .topbar-inner { grid-template-columns: auto 1fr; }
+  .topbar-center { display: none; }
+}
+@media (max-width: 560px) {
+  .main, .telemetry, .topbar-inner, .footer { padding-left: 14px; padding-right: 14px; }
+  .archive-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
+
+/* Timelapse overlay */
+.timelapse-btn {
+  background: transparent; border: 1px solid var(--line-strong);
+  color: var(--ink-1); font-family: var(--ff-mono); font-size: 0.65rem;
+  letter-spacing: 0.12em; padding: 6px 10px; cursor: pointer;
+  transition: all 0.15s; white-space: nowrap;
+}
+.timelapse-btn:hover { border-color: var(--mint); color: var(--mint); background: var(--mint-soft); }
+.tl-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(7,9,12,0.96);
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+}
+.tl-overlay.visible { display: flex; }
+.tl-stage {
+  display: flex; flex-direction: column;
+  width: min(92vw, 960px);
+  gap: 12px;
+}
+.tl-frame {
+  position: relative; background: #000;
+  border: 1px solid var(--line-strong);
+  aspect-ratio: 4/3; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.tl-frame img { width: 100%; height: 100%; object-fit: contain; }
+.tl-empty {
+  position: absolute; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  color: var(--ink-2); font-family: var(--ff-mono); font-size: 0.85rem; letter-spacing: 0.15em;
+}
+.tl-controls { display: flex; flex-direction: column; gap: 10px; }
+.tl-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--ff-mono); font-size: 0.7rem; letter-spacing: 0.1em; color: var(--ink-1);
+}
+.tl-pos { color: var(--ink-2); }
+.tl-scrubber {
+  width: 100%; height: 4px; accent-color: var(--mint); cursor: pointer;
+}
+.tl-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.tl-fps-group { display: flex; align-items: center; gap: 4px; }
+.tl-fps-btn {
+  background: var(--bg-2); border: 1px solid var(--line-strong);
+  color: var(--ink-2); font-family: var(--ff-mono); font-size: 0.65rem;
+  letter-spacing: 0.1em; padding: 4px 9px; cursor: pointer; transition: all 0.15s;
+}
+.tl-fps-btn.is-active { background: var(--mint-soft); border-color: var(--mint); color: var(--mint); }
+.tl-fps-label {
+  font-family: var(--ff-mono); font-size: 0.6rem; letter-spacing: 0.15em;
+  color: var(--ink-3); margin-left: 2px;
+}
+.tl-play-btn {
+  background: var(--mint-soft); border: 1px solid var(--mint);
+  color: var(--mint); font-family: var(--ff-mono); font-size: 0.8rem;
+  letter-spacing: 0.08em; padding: 7px 22px; cursor: pointer;
+  transition: all 0.15s; min-width: 90px; text-align: center;
+}
+.tl-play-btn:hover { background: rgba(45,226,154,0.28); }
+.tl-close {
+  position: absolute; top: 16px; right: 20px;
+  background: transparent; border: none; color: var(--ink-2);
+  font-size: 1.4rem; cursor: pointer; line-height: 1; transition: color 0.15s;
+}
+.tl-close:hover { color: var(--ink-0); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">
+        <span class="brand-title">KANSHI<span class="slash">//</span>CONSOLE</span>
+        <span class="brand-sub">Surveillance · Ops Console</span>
+      </span>
+    </a>
+    <div class="topbar-center">
+      <span class="chip"><span class="lbl">NODE</span><b id="chip-device">---</b></span>
+      <span class="chip"><span class="lbl">UTC</span><b id="chip-clock">--:--:--</b></span>
+      <span class="chip accent"><span class="lbl">ARCHIVE</span><b id="chip-count">0</b></span>
+    </div>
+    <div class="status-chip" id="status-chip">
+      <span class="led"></span>
+      <span id="status-text">LINK · OK</span>
+    </div>
+  </div>
+</header>
+
+<section class="telemetry">
+  <div class="telemetry-grid">
+    <div class="tele-cell">
+      <div class="tele-label">T-minus Next Frame</div>
+      <div class="tele-value"><span id="tele-next">--:--</span></div>
+      <div class="tele-sub">synced to wall clock</div>
+    </div>
+    <div class="tele-cell mint">
+      <div class="tele-label">Capture Cadence</div>
+      <div class="tele-value"><span id="tele-interval">-</span><span class="unit">MIN</span></div>
+      <div class="tele-sub" id="tele-interval-sub">fires at wall-clock boundaries</div>
+    </div>
+    <div class="tele-cell cyan">
+      <div class="tele-label">Archive Volume</div>
+      <div class="tele-value"><span id="tele-archive">0</span><span class="unit" id="tele-archive-unit">/ --</span></div>
+      <div class="tele-sub">rolling 30 day retention</div>
+    </div>
+    <div class="tele-cell red">
+      <div class="tele-label">Link Status</div>
+      <div class="tele-value"><span id="tele-link">—</span></div>
+      <div class="tele-sub" id="tele-link-sub">awaiting handshake</div>
+    </div>
+  </div>
+</section>
+
+<main class="main">
+
+  <!-- Latest capture viewer -->
+  <section class="panel viewer-panel">
+    <span class="corner-tl"></span><span class="corner-br"></span>
+    <div class="panel-head">
+      <span class="dot"></span>
+      <span>CH-01 // Latest Capture</span>
+      <span class="tag" id="viewer-tag">—</span>
+    </div>
+    <div class="panel-body">
+      <div class="viewer-stage">
+        <img id="viewer-img" alt="Latest captured frame">
+        <div class="viewer-empty" id="viewer-empty">[ NO FRAME — WAITING FOR ARCHIVE ]</div>
+      </div>
+      <div class="viewer-foot">
+        <span class="ts" id="viewer-ts">—</span>
+        <span class="sz" id="viewer-sz">—</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sidebar -->
+  <aside class="sidestack">
+    <div class="panel countdown-card">
+      <span class="corner-tl"></span><span class="corner-br"></span>
+      <svg class="progress-ring" viewBox="0 0 64 64" aria-hidden="true">
+        <circle class="track" cx="32" cy="32" r="28"/>
+        <circle class="bar" id="countdown-ring" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="0"/>
+      </svg>
+      <div class="countdown-label">T-minus next capture</div>
+      <div class="countdown-clock" id="countdown-clock">--:--</div>
+      <div class="countdown-meta">
+        <span><span class="k">NEXT</span><span id="countdown-next">--:--:--</span></span>
+        <span><span class="k">LAST</span><span id="countdown-last">—</span></span>
+      </div>
+    </div>
+
+    <div class="panel interval-card">
+      <span class="corner-tl"></span><span class="corner-br"></span>
+      <div class="panel-head">
+        <span class="dot"></span>
+        <span>Capture Interval</span>
+        <span class="tag">MIN · 1–10</span>
+      </div>
+      <div class="panel-body">
+        <div class="interval-current">
+          <span class="num" id="interval-value">-</span>
+          <span class="unit">min / shot</span>
+        </div>
+        <div class="interval-track" id="interval-track" role="radiogroup" aria-label="Capture interval"></div>
+        <div class="interval-hint">
+          <span>Aligned to wall clock</span>
+          <span class="sync" id="interval-sync">synced</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel live-card">
+      <span class="corner-tl"></span><span class="corner-br"></span>
+      <div class="live-head" id="live-head" role="button" aria-expanded="false">
+        <div class="live-head-left"><span class="dot"></span><span>Live Stream</span></div>
+        <div class="live-head-right" id="live-hint">Engage ▾</div>
+      </div>
+      <div class="live-body" id="live-body">
+        <img id="live-stream" alt="Live camera stream">
+      </div>
+    </div>
+  </aside>
+
+  <!-- Archive grid -->
+  <section class="panel archive">
+    <span class="corner-tl"></span><span class="corner-br"></span>
+    <div class="panel-head">
+      <span class="dot"></span>
+      <span>Archive // Captured Frames</span>
+      <span class="tag" id="archive-tag">0 FRAMES</span>
+    </div>
+    <div class="archive-toolbar">
+      <div class="toolbar-left">
+        <select class="date-select" id="date-filter">
+          <option value="">ALL DATES</option>
+        </select>
+        <span class="count-pill">SHOWING<b id="showing-count">0</b>/<b id="showing-total">0</b></span>
+      </div>
+      <div class="toolbar-right">
+        <button class="timelapse-btn" id="timelapse-btn">▶ TIMELAPSE</button>
+        <label class="auto-toggle" for="auto-refresh">
+          <span>AUTO</span>
+          <input type="checkbox" id="auto-refresh" checked>
+        </label>
+        <button class="refresh-btn" id="refresh-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="archive-grid" id="archive-grid"></div>
+    <div class="load-more-wrap" id="load-more-wrap">
+      <button class="load-more-btn" id="load-more-btn">↓ Load more</button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span>KANSHI // OPS CONSOLE · v2.1</span>
+  <span>RETENTION <b>30 DAYS</b> · FEED <b>CH-01</b></span>
+</footer>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+  <button class="lbl-close" id="lbl-close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+  <button class="lbl-nav prev" id="lbl-prev"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+  <button class="lbl-nav next" id="lbl-next"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+  <div class="lightbox-stage">
+    <div class="lightbox-frame"><img id="lightbox-img" alt=""></div>
+    <div class="lightbox-footer">
+      <span class="hi" id="lightbox-fname">—</span>
+      <span id="lightbox-stamp">—</span>
+    </div>
+  </div>
+</div>
+
+<!-- Timelapse overlay -->
+<div class="tl-overlay" id="tl-overlay" role="dialog" aria-modal="true">
+  <button class="tl-close" id="tl-close">✕</button>
+  <div class="tl-stage">
+    <div class="tl-frame">
+      <img id="tl-img" alt="">
+      <div class="tl-empty" id="tl-empty">フレームなし</div>
+    </div>
+    <div class="tl-controls">
+      <div class="tl-meta">
+        <span id="tl-ts">—</span>
+        <span class="tl-pos" id="tl-pos">0 / 0</span>
+      </div>
+      <input type="range" class="tl-scrubber" id="tl-scrubber" min="0" max="0" value="0">
+      <div class="tl-actions">
+        <div class="tl-fps-group" id="tl-fps-group">
+          <button class="tl-fps-btn" data-fps="5">5</button>
+          <button class="tl-fps-btn is-active" data-fps="10">10</button>
+          <button class="tl-fps-btn" data-fps="20">20</button>
+          <button class="tl-fps-btn" data-fps="30">30</button>
+          <span class="tl-fps-label">FPS</span>
+        </div>
+        <button class="tl-play-btn" id="tl-play-btn">▶ PLAY</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  const state = {
+    images: [],
+    total: 0,
+    offset: 0,
+    limit: 60,
+    date: '',
+    auto: true,
+    streaming: false,
+    loading: false,
+    deviceId: '—',
+    galleryCount: 0,
+    galleryMax: 0,
+    streamUrl: '',
+    settings: { interval_min: null, min: 1, max: 10 },
+    pendingInterval: null,
+    nextBoundary: null,
+    lastCapture: null,
+    lbIndex: -1,
+    connected: true,
+    timelapse: { frames: [], index: 0, playing: false, fps: 10, timerId: null }
+  };
+
+  const $ = id => document.getElementById(id);
+  const dom = {
+    chipDevice: $('chip-device'),
+    chipClock: $('chip-clock'),
+    chipCount: $('chip-count'),
+    statusChip: $('status-chip'),
+    statusText: $('status-text'),
+    teleNext: $('tele-next'),
+    teleInterval: $('tele-interval'),
+    teleIntervalSub: $('tele-interval-sub'),
+    teleArchive: $('tele-archive'),
+    teleArchiveUnit: $('tele-archive-unit'),
+    teleLink: $('tele-link'),
+    teleLinkSub: $('tele-link-sub'),
+    viewerTag: $('viewer-tag'),
+    viewerImg: $('viewer-img'),
+    viewerEmpty: $('viewer-empty'),
+    viewerTs: $('viewer-ts'),
+    viewerSz: $('viewer-sz'),
+    countdownClock: $('countdown-clock'),
+    countdownNext: $('countdown-next'),
+    countdownLast: $('countdown-last'),
+    countdownRing: $('countdown-ring'),
+    intervalValue: $('interval-value'),
+    intervalTrack: $('interval-track'),
+    intervalSync: $('interval-sync'),
+    liveHead: $('live-head'),
+    liveBody: $('live-body'),
+    liveStream: $('live-stream'),
+    liveHint: $('live-hint'),
+    archiveTag: $('archive-tag'),
+    dateFilter: $('date-filter'),
+    showingCount: $('showing-count'),
+    showingTotal: $('showing-total'),
+    grid: $('archive-grid'),
+    loadMoreWrap: $('load-more-wrap'),
+    loadMoreBtn: $('load-more-btn'),
+    autoToggle: $('auto-refresh'),
+    refreshBtn: $('refresh-btn'),
+    lightbox: $('lightbox'),
+    lbImg: $('lightbox-img'),
+    lbClose: $('lbl-close'),
+    lbPrev: $('lbl-prev'),
+    lbNext: $('lbl-next'),
+    lbFname: $('lightbox-fname'),
+    lbStamp: $('lightbox-stamp'),
+    toasts: $('toasts'),
+    tlOverlay: $('tl-overlay'),
+    tlImg: $('tl-img'),
+    tlEmpty: $('tl-empty'),
+    tlTs: $('tl-ts'),
+    tlPos: $('tl-pos'),
+    tlScrubber: $('tl-scrubber'),
+    tlPlayBtn: $('tl-play-btn'),
+    tlClose: $('tl-close'),
+    tlFpsGroup: $('tl-fps-group'),
+    tlBtn: $('timelapse-btn')
+  };
+
+  const pad = (n, w) => String(n).padStart(w || 2, '0');
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function formatSize(b) {
+    if (b == null) return '—';
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  function formatTs(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return pad(d.getFullYear(), 4) + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+      ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+
+  function formatDateLabel(s) {
+    if (!s || s.length !== 8) return s;
+    return s.slice(0, 4) + '·' + s.slice(4, 6) + '·' + s.slice(6, 8);
+  }
+
+  function toast(msg, kind) {
+    const el = document.createElement('div');
+    el.className = 'toast ' + (kind || '');
+    el.textContent = msg;
+    dom.toasts.appendChild(el);
+    setTimeout(() => el.remove(), 4200);
+  }
+
+  function apiGet(url) {
+    return fetch(url).then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function apiPost(url, body) {
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(async r => {
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+      return data;
+    });
+  }
+
+  function setConnected(ok) {
+    state.connected = ok;
+    if (ok) {
+      dom.statusChip.classList.remove('offline');
+      dom.statusText.textContent = 'LINK · OK';
+      dom.teleLink.textContent = 'ONLINE';
+      dom.teleLink.style.color = 'var(--mint)';
+      dom.teleLinkSub.textContent = 'handshake nominal';
+    } else {
+      dom.statusChip.classList.add('offline');
+      dom.statusText.textContent = 'LINK · LOST';
+      dom.teleLink.textContent = 'OFFLINE';
+      dom.teleLink.style.color = 'var(--red)';
+      dom.teleLinkSub.textContent = 'retrying …';
+    }
+  }
+
+  /* Interval */
+  function buildIntervalTrack() {
+    let html = '';
+    for (let i = state.settings.min; i <= state.settings.max; i++) {
+      html += '<button class="interval-cell" role="radio" data-value="' + i + '" aria-checked="false">' + i + '</button>';
+    }
+    dom.intervalTrack.innerHTML = html;
+  }
+
+  function paintInterval() {
+    const cur = state.settings.interval_min;
+    dom.intervalValue.textContent = cur != null ? cur : '-';
+    dom.teleInterval.textContent = cur != null ? cur : '-';
+    dom.teleIntervalSub.textContent = cur === 1
+      ? 'fires every minute · :00'
+      : ('fires at :00, :' + pad(cur) + ', :' + pad((cur * 2) % 60) + ' …');
+    Array.from(dom.intervalTrack.children).forEach(btn => {
+      const v = parseInt(btn.getAttribute('data-value'), 10);
+      const active = v === cur;
+      btn.classList.toggle('is-current', active);
+      btn.setAttribute('aria-checked', active ? 'true' : 'false');
+      btn.classList.remove('is-saving');
+    });
+  }
+
+  function onIntervalClick(e) {
+    const btn = e.target.closest('.interval-cell');
+    if (!btn) return;
+    const v = parseInt(btn.getAttribute('data-value'), 10);
+    if (isNaN(v) || v === state.settings.interval_min || state.pendingInterval != null) return;
+    state.pendingInterval = v;
+    btn.classList.add('is-saving');
+    dom.intervalSync.textContent = 'committing…';
+    dom.intervalSync.classList.remove('error');
+    dom.intervalSync.classList.add('pending');
+    apiPost('/api/settings', { interval_min: v }).then(data => {
+      state.settings = data;
+      state.pendingInterval = null;
+      paintInterval();
+      dom.intervalSync.textContent = 'synced ✓';
+      dom.intervalSync.classList.remove('pending', 'error');
+      toast('Interval updated to ' + v + ' min', 'ok');
+      recomputeBoundary();
+    }).catch(err => {
+      state.pendingInterval = null;
+      paintInterval();
+      dom.intervalSync.textContent = 'error';
+      dom.intervalSync.classList.remove('pending');
+      dom.intervalSync.classList.add('error');
+      toast('Update failed: ' + err.message, 'err');
+    });
+  }
+
+  /* Countdown */
+  function recomputeBoundary() {
+    const iv = state.settings.interval_min;
+    if (!iv) { state.nextBoundary = null; return; }
+    const now = Date.now();
+    const period = iv * 60000;
+    state.nextBoundary = (Math.floor(now / period) + 1) * period;
+  }
+  function paintCountdown() {
+    const iv = state.settings.interval_min;
+    if (!iv || !state.nextBoundary) {
+      dom.countdownClock.textContent = '--:--';
+      dom.teleNext.textContent = '--:--';
+      dom.countdownNext.textContent = '--:--:--';
+      return;
+    }
+    const now = Date.now();
+    if (now >= state.nextBoundary) recomputeBoundary();
+    const ms = Math.max(0, state.nextBoundary - now);
+    const totalMs = iv * 60000;
+    const mm = Math.floor(ms / 60000);
+    const ss = Math.floor((ms % 60000) / 1000);
+    const t = pad(mm) + ':' + pad(ss);
+    dom.countdownClock.textContent = t;
+    dom.teleNext.textContent = t;
+    const target = new Date(state.nextBoundary);
+    dom.countdownNext.textContent = pad(target.getHours()) + ':' + pad(target.getMinutes()) + ':' + pad(target.getSeconds());
+    const circ = 2 * Math.PI * 28;
+    const pct = 1 - (ms / totalMs);
+    dom.countdownRing.setAttribute('stroke-dasharray', circ.toFixed(2));
+    dom.countdownRing.setAttribute('stroke-dashoffset', (circ * pct).toFixed(2));
+  }
+  function paintUtcClock() {
+    const d = new Date();
+    dom.chipClock.textContent = pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds());
+  }
+
+  /* Viewer (latest capture) */
+  function paintLatest() {
+    if (state.images.length === 0) {
+      dom.viewerEmpty.style.display = 'grid';
+      dom.viewerImg.classList.remove('is-loaded');
+      dom.viewerImg.removeAttribute('src');
+      dom.viewerTs.textContent = '—';
+      dom.viewerSz.textContent = '—';
+      dom.viewerTag.textContent = 'No frame';
+      return;
+    }
+    const img = state.images[0];
+    dom.viewerEmpty.style.display = 'none';
+    // Set onload BEFORE src so cached images also flip opacity
+    dom.viewerImg.classList.remove('is-loaded');
+    dom.viewerImg.onload = () => dom.viewerImg.classList.add('is-loaded');
+    dom.viewerImg.onerror = () => dom.viewerImg.classList.add('is-loaded');
+    dom.viewerImg.alt = img.filename;
+    dom.viewerImg.src = img.url;
+    if (dom.viewerImg.complete && dom.viewerImg.naturalWidth > 0) {
+      dom.viewerImg.classList.add('is-loaded');
+    }
+    dom.viewerTs.textContent = formatTs(img.captured_at);
+    dom.viewerSz.textContent = formatSize(img.size_bytes);
+    dom.viewerTag.textContent = img.filename;
+    state.lastCapture = img.captured_at;
+    dom.countdownLast.textContent = formatTs(state.lastCapture);
+  }
+
+  /* Archive grid */
+  function renderShot(img, i) {
+    const fn = escapeHtml(img.filename);
+    const sz = escapeHtml(formatSize(img.size_bytes));
+    const idx = String(i + 1).padStart(3, '0');
+    return '<div class="shot" data-index="' + i + '" tabindex="0">' +
+      '<div class="shot-thumb">' +
+      '<span class="shot-tag">#' + idx + '</span>' +
+      '<img src="' + escapeHtml(img.url) + '" alt="' + fn + '" loading="lazy">' +
+      '</div>' +
+      '<div class="shot-meta"><span class="fname">' + fn + '</span><span class="sz">' + sz + '</span></div>' +
+      '</div>';
+  }
+
+  function renderGrid(append) {
+    if (!append) dom.grid.innerHTML = '';
+    if (state.images.length === 0) {
+      dom.grid.innerHTML = '<div class="empty"><span class="empty-title">No frames yet</span><span>Frames materialise after the next boundary.</span></div>';
+      dom.loadMoreWrap.classList.remove('visible');
+      dom.showingCount.textContent = 0;
+      dom.showingTotal.textContent = 0;
+      dom.archiveTag.textContent = '0 FRAMES';
+      return;
+    }
+    const start = append ? dom.grid.children.length : 0;
+    let html = '';
+    for (let i = start; i < state.images.length; i++) html += renderShot(state.images[i], i);
+    if (append) dom.grid.insertAdjacentHTML('beforeend', html);
+    else dom.grid.innerHTML = html;
+    const cards = dom.grid.querySelectorAll('.shot');
+    for (let j = start; j < cards.length; j++) cards[j].style.animationDelay = ((j - start) * 16) + 'ms';
+    dom.loadMoreWrap.classList.toggle('visible', state.images.length < state.total);
+    dom.showingCount.textContent = state.images.length;
+    dom.showingTotal.textContent = state.total;
+    dom.archiveTag.textContent = state.total + ' FRAMES';
+  }
+
+  /* Data fetching */
+  function fetchImages(append) {
+    if (state.loading && !append) return;
+    if (!append) { state.loading = true; state.offset = 0; state.images = []; dom.refreshBtn.classList.add('is-loading'); }
+    let url = '/api/images?limit=' + state.limit + '&offset=' + state.offset;
+    if (state.date) url += '&date=' + encodeURIComponent(state.date);
+    apiGet(url).then(data => {
+      const imgs = data.images || [];
+      if (append) state.images = state.images.concat(imgs);
+      else state.images = imgs;
+      state.total = data.total || 0;
+      state.offset = (data.offset || 0) + (data.limit || state.limit);
+      state.loading = false;
+      renderGrid(append);
+      if (!append) paintLatest();
+      setConnected(true);
+    }).catch(err => {
+      state.loading = false;
+      toast('Fetch failed: ' + err.message, 'err');
+      setConnected(false);
+    }).then(() => dom.refreshBtn.classList.remove('is-loading'));
+  }
+
+  function fetchDates() {
+    apiGet('/api/dates').then(data => {
+      const dates = data.dates || [];
+      while (dom.dateFilter.options.length > 1) dom.dateFilter.remove(1);
+      dates.forEach(d => {
+        const o = document.createElement('option');
+        o.value = d;
+        o.textContent = formatDateLabel(d);
+        dom.dateFilter.appendChild(o);
+      });
+      if (state.date) dom.dateFilter.value = state.date;
+    }).catch(() => {});
+  }
+
+  function fetchStatus() {
+    apiGet('/api/status').then(data => {
+      state.deviceId = data.device_id || '—';
+      state.galleryCount = data.gallery_count || 0;
+      state.galleryMax = data.max_gallery_images || 0;
+      state.streamUrl = data.stream_url || '';
+      dom.chipDevice.textContent = state.deviceId;
+      dom.chipCount.textContent = state.galleryCount;
+      dom.teleArchive.textContent = state.galleryCount;
+      dom.teleArchiveUnit.textContent = '/ ' + state.galleryMax;
+      if (state.streaming) dom.liveStream.src = state.streamUrl;
+      setConnected(true);
+    }).catch(() => setConnected(false));
+  }
+
+  function fetchSettings() {
+    return apiGet('/api/settings').then(data => {
+      state.settings = { interval_min: data.interval_min, min: data.min || 1, max: data.max || 10 };
+      buildIntervalTrack();
+      paintInterval();
+      recomputeBoundary();
+      paintCountdown();
+    }).catch(err => toast('Settings fetch failed: ' + err.message, 'err'));
+  }
+
+  function maybeAutoRefresh() {
+    if (!state.auto || state.loading) return;
+    let url = '/api/images?limit=' + state.limit + '&offset=0';
+    if (state.date) url += '&date=' + encodeURIComponent(state.date);
+    apiGet(url).then(data => {
+      const imgs = data.images || [];
+      const before = state.images.length > 0 ? state.images[0].filename : '';
+      const after = imgs.length > 0 ? imgs[0].filename : '';
+      if ((data.total || 0) !== state.total || before !== after) {
+        state.images = imgs;
+        state.total = data.total || 0;
+        state.offset = (data.limit || state.limit);
+        renderGrid(false);
+        paintLatest();
+      }
+      setConnected(true);
+    }).catch(() => setConnected(false));
+  }
+
+  /* Live */
+  function toggleLive() {
+    state.streaming = !state.streaming;
+    dom.liveBody.classList.toggle('visible', state.streaming);
+    dom.liveHead.setAttribute('aria-expanded', state.streaming ? 'true' : 'false');
+    dom.liveHint.textContent = state.streaming ? 'Disengage ▴' : 'Engage ▾';
+    if (state.streaming) dom.liveStream.src = state.streamUrl || '/stream';
+    else dom.liveStream.src = '';
+  }
+
+  /* Lightbox */
+  function openLightbox(i) {
+    if (i < 0 || i >= state.images.length) return;
+    const img = state.images[i];
+    state.lbIndex = i;
+    dom.lbImg.src = img.url;
+    dom.lbImg.alt = img.filename;
+    dom.lbFname.textContent = img.filename;
+    dom.lbStamp.textContent = formatTs(img.captured_at);
+    dom.lightbox.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+    updateLightboxNav();
+  }
+  function closeLightbox() {
+    dom.lightbox.classList.remove('visible');
+    state.lbIndex = -1;
+    document.body.style.overflow = '';
+  }
+  function navLightbox(step) {
+    const n = state.lbIndex + step;
+    if (n >= 0 && n < state.images.length) openLightbox(n);
+  }
+  function updateLightboxNav() {
+    dom.lbPrev.style.display = state.lbIndex > 0 ? 'grid' : 'none';
+    dom.lbNext.style.display = state.lbIndex < state.images.length - 1 ? 'grid' : 'none';
+  }
+
+  /* Timelapse */
+  function tlStop() {
+    if (state.timelapse.timerId) { clearInterval(state.timelapse.timerId); state.timelapse.timerId = null; }
+    state.timelapse.playing = false;
+    dom.tlPlayBtn.textContent = '▶ PLAY';
+  }
+
+  function tlShowFrame(idx) {
+    const tl = state.timelapse;
+    if (!tl.frames.length) return;
+    idx = Math.max(0, Math.min(idx, tl.frames.length - 1));
+    tl.index = idx;
+    const frame = tl.frames[idx];
+    dom.tlImg.src = frame.url;
+    dom.tlTs.textContent = formatTs(frame.captured_at);
+    dom.tlPos.textContent = (idx + 1) + ' / ' + tl.frames.length;
+    dom.tlScrubber.value = idx;
+    for (let k = 1; k <= 5; k++) {
+      const pi = idx + k;
+      if (pi < tl.frames.length) { const pre = new Image(); pre.src = tl.frames[pi].url; }
+    }
+  }
+
+  function tlTick() {
+    const tl = state.timelapse;
+    if (tl.index >= tl.frames.length - 1) { tlStop(); return; }
+    tlShowFrame(tl.index + 1);
+  }
+
+  function tlPlay() {
+    const tl = state.timelapse;
+    if (!tl.frames.length) return;
+    if (tl.index >= tl.frames.length - 1) tlShowFrame(0);
+    tl.playing = true;
+    dom.tlPlayBtn.textContent = '⏸ PAUSE';
+    if (tl.timerId) clearInterval(tl.timerId);
+    tl.timerId = setInterval(tlTick, Math.round(1000 / tl.fps));
+  }
+
+  function tlTogglePlay() {
+    if (state.timelapse.playing) tlStop(); else tlPlay();
+  }
+
+  function tlSetFps(fps) {
+    state.timelapse.fps = fps;
+    Array.from(dom.tlFpsGroup.querySelectorAll('.tl-fps-btn')).forEach(btn => {
+      btn.classList.toggle('is-active', parseInt(btn.dataset.fps, 10) === fps);
+    });
+    if (state.timelapse.playing) {
+      clearInterval(state.timelapse.timerId);
+      state.timelapse.timerId = setInterval(tlTick, Math.round(1000 / fps));
+    }
+  }
+
+  function openTimelapse() {
+    const date = state.date || '';
+    let url = '/api/images?order=asc&limit=2000';
+    if (date) url += '&date=' + encodeURIComponent(date);
+    const tl = state.timelapse;
+    tlStop();
+    tl.frames = [];
+    tl.index = 0;
+    dom.tlImg.removeAttribute('src');
+    dom.tlImg.style.display = 'block';
+    dom.tlEmpty.style.display = 'none';
+    dom.tlTs.textContent = '読み込み中…';
+    dom.tlPos.textContent = '0 / 0';
+    dom.tlScrubber.max = 0;
+    dom.tlScrubber.value = 0;
+    dom.tlOverlay.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+    apiGet(url).then(data => {
+      tl.frames = data.images || [];
+      if (!tl.frames.length) {
+        dom.tlEmpty.style.display = 'flex';
+        dom.tlImg.style.display = 'none';
+        dom.tlTs.textContent = '—';
+        dom.tlPos.textContent = '0 / 0';
+        return;
+      }
+      dom.tlScrubber.max = tl.frames.length - 1;
+      tlShowFrame(0);
+      tlPlay();
+    }).catch(err => {
+      dom.tlTs.textContent = 'Error: ' + err.message;
+    });
+  }
+
+  function closeTimelapse() {
+    tlStop();
+    dom.tlOverlay.classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+
+  /* Events */
+  dom.intervalTrack.addEventListener('click', onIntervalClick);
+  dom.liveHead.addEventListener('click', toggleLive);
+  dom.dateFilter.addEventListener('change', () => { state.date = dom.dateFilter.value || ''; fetchImages(false); });
+  dom.refreshBtn.addEventListener('click', () => { fetchStatus(); fetchImages(false); fetchSettings(); });
+  dom.autoToggle.addEventListener('change', () => { state.auto = dom.autoToggle.checked; });
+  dom.loadMoreBtn.addEventListener('click', () => {
+    dom.loadMoreBtn.disabled = true;
+    fetchImages(true);
+    setTimeout(() => { dom.loadMoreBtn.disabled = false; }, 400);
+  });
+
+  dom.grid.addEventListener('click', e => {
+    const card = e.target.closest('.shot');
+    if (!card) return;
+    const i = parseInt(card.getAttribute('data-index'), 10);
+    if (!isNaN(i)) openLightbox(i);
+  });
+  dom.grid.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const card = e.target.closest('.shot');
+    if (!card) return;
+    e.preventDefault();
+    const i = parseInt(card.getAttribute('data-index'), 10);
+    if (!isNaN(i)) openLightbox(i);
+  });
+
+  dom.lbClose.addEventListener('click', closeLightbox);
+  dom.lbPrev.addEventListener('click', () => navLightbox(-1));
+  dom.lbNext.addEventListener('click', () => navLightbox(1));
+  dom.lightbox.addEventListener('click', e => { if (e.target === dom.lightbox) closeLightbox(); });
+
+  dom.tlBtn.addEventListener('click', openTimelapse);
+  dom.tlClose.addEventListener('click', closeTimelapse);
+  dom.tlOverlay.addEventListener('click', e => { if (e.target === dom.tlOverlay) closeTimelapse(); });
+  dom.tlPlayBtn.addEventListener('click', tlTogglePlay);
+  dom.tlScrubber.addEventListener('input', () => {
+    const idx = parseInt(dom.tlScrubber.value, 10);
+    if (isNaN(idx)) return;
+    const wasPlaying = state.timelapse.playing;
+    tlStop();
+    tlShowFrame(idx);
+    if (wasPlaying) tlPlay();
+  });
+  dom.tlFpsGroup.addEventListener('click', e => {
+    const btn = e.target.closest('.tl-fps-btn');
+    if (!btn) return;
+    const fps = parseInt(btn.dataset.fps, 10);
+    if (!isNaN(fps)) tlSetFps(fps);
+  });
+
+  document.addEventListener('keydown', e => {
+    if (dom.tlOverlay.classList.contains('visible')) {
+      if (e.key === 'Escape') { e.preventDefault(); closeTimelapse(); return; }
+      if (e.key === ' ') { e.preventDefault(); tlTogglePlay(); return; }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const wasPlaying = state.timelapse.playing;
+        tlStop(); tlShowFrame(state.timelapse.index - 1); if (wasPlaying) tlPlay();
+        return;
+      }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        const wasPlaying = state.timelapse.playing;
+        tlStop(); tlShowFrame(state.timelapse.index + 1); if (wasPlaying) tlPlay();
+        return;
+      }
+      return;
+    }
+    if (state.lbIndex < 0) return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); navLightbox(-1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); navLightbox(1); }
+  });
+
+  /* Init */
+  function init() {
+    paintUtcClock();
+    setInterval(paintUtcClock, 1000);
+    setInterval(paintCountdown, 500);
+    setInterval(fetchStatus, 30000);
+    setInterval(maybeAutoRefresh, 20000);
+    fetchStatus();
+    fetchSettings();
+    fetchDates();
+    fetchImages(false);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>

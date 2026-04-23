@@ -1,0 +1,6 @@
+# Ricoh USB2.0 Camera (05ca:18fe) - Kanshi Camera System
+# Auto-authorize the device and disable USB autosuspend on connect.
+
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="05ca", ATTR{idProduct}=="18fe", \
+    ATTR{authorized}="1", \
+    RUN+="/bin/sh -c 'echo on > /sys$devpath/power/control'"
