@@ -19,6 +19,7 @@ node_modules/
 *.jpg
 *.jpeg
 *.gif
+!kanshi_ui_test.gif
 *.tar.gz
 *.pdf
 

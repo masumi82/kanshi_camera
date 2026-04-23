@@ -2,6 +2,8 @@
 
 Raspberry Pi 向け USB カメラ監視システム。uStreamer + Python 製の軽量コンテナで、定期スナップショットのアップロード・ローカルギャラリー表示・MJPEG ストリーム配信を提供します。
 
+![kanshi_camera Web UI](kanshi_ui_test.gif)
+
 ## アーキテクチャ
 
 `supervisord` が 3 プロセスを並列管理するシングルコンテナ構成です。
